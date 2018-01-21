@@ -18,8 +18,8 @@
   }
 })(function($) {
   function Item(element) {
-    this.$element = $(element);
-    this.$menu = this.$element.closest('.dropdown-menu');
+    this.element = element;
+    this.$menu = $(this.element.closest('.dropdown-menu'));
     this.$main = this.$menu.parent();
     this.$items = this.$menu.children('.dropdown-submenu');
 
@@ -28,27 +28,26 @@
 
   Item.prototype = {
     init: function() {
-      this.$element.on('keydown', $.proxy(this, 'keydown'));
+      this.element.addEventListener('keydown', this.keydown.bind(this));
     },
     close: function() {
-      this.$main.removeClass('open');
-      this.$items.trigger('hide.bs.submenu');
+      this.$menu.removeClass('show');
+      //this.$items.trigger('hide.bs.submenu');
     },
     keydown: function(event) {
       // 27: Esc
-
-      if (event.keyCode == 27) {
-        event.stopPropagation();
-
-        this.close();
-        this.$main.children('a, button').trigger('focus');
+      if (event.keyCode !== 27) {
+        return;
       }
+
+      this.close();
+      this.$main.children('.dropdown-item').trigger('focus');
     }
   };
 
   function SubmenuItem(element) {
-    this.$element = $(element);
-    this.$main = this.$element.parent();
+    this.element = element;
+    this.$main = $(this.element.parentNode);
     this.$menu = this.$main.children('.dropdown-menu');
     this.$subs = this.$main.siblings('.dropdown-submenu');
     this.$items = this.$menu.children('.dropdown-submenu');
@@ -56,58 +55,56 @@
     this.init();
   }
 
-  $.extend(SubmenuItem.prototype, Item.prototype, {
+  SubmenuItem.prototype = {
     init: function() {
-      this.$element.on({
-        click: $.proxy(this, 'click'),
-        keydown: $.proxy(this, 'keydown')
-      });
+      this.element.addEventListener('click', this.click.bind(this));
+      this.element.addEventListener('keydown', this.keydown.bind(this));
 
-      this.$main.on('hide.bs.submenu', $.proxy(this, 'hide'));
+      //this.$main.on('hide.bs.submenu', $.proxy(this, 'hide'));
     },
     click: function(event) {
-      // Fix a[href="#"]. For community
-      event.preventDefault();
-
       event.stopPropagation();
 
       this.toggle();
     },
     hide: function(event) {
-      // Stop event bubbling
+      // NOTE: Stop event bubbling
       event.stopPropagation();
 
       this.close();
     },
     open: function() {
-      this.$main.addClass('open');
-      this.$subs.trigger('hide.bs.submenu');
+      this.$menu.addClass('show');
+      //this.$subs.trigger('hide.bs.submenu');
+    },
+    close: function() {
+      this.$menu.removeClass('show');
+      //this.$items.trigger('hide.bs.submenu');
     },
     toggle: function() {
-      if (this.$main.hasClass('open')) {
+      if (this.$menu.hasClass('show')) {
         this.close();
-      }
-      else {
+      } else {
         this.open();
       }
     },
     keydown: function(event) {
       // 13: Return, 32: Spacebar
 
-      if (event.keyCode == 32) {
-        // Off vertical scrolling
+      if (event.keyCode === 32) {
+        // NOTE: Off vertical scrolling
         event.preventDefault();
       }
 
-      if ($.inArray(event.keyCode, [13, 32]) != -1) {
+      if ([13, 32].includes(event.keyCode)) {
         this.toggle();
       }
     }
-  });
+  };
 
   function Submenupicker(element) {
-    this.$element = $(element);
-    this.$main = this.$element.parent();
+    this.element = element;
+    this.$main = $(this.element.parentNode);
     this.$menu = this.$main.children('.dropdown-menu');
     this.$items = this.$menu.children('.dropdown-submenu');
 
@@ -117,45 +114,68 @@
   Submenupicker.prototype = {
     init: function() {
       this.$menu.off('keydown.bs.dropdown.data-api');
-      this.$menu.on('keydown', $.proxy(this, 'itemKeydown'));
+      this.$menu.on('keydown', this.itemKeydown.bind(this));
 
-      this.$menu.find('li > a').each(function() {
-        new Item(this);
-      });
+      this.$menu.on('keydown', '.dropdown-item', this.handleKeydownDropdownItem.bind(this));
+      this.$menu.on('keydown', '.dropdown-submenu > .dropdown-item', this.handleKeydownSubmenuDropdownItem.bind(this));
 
-      this.$menu.find('.dropdown-submenu > a').each(function() {
-        new SubmenuItem(this);
-      });
-
-      this.$main.on('hidden.bs.dropdown', $.proxy(this, 'hidden'));
+      //this.$main.on('hidden.bs.dropdown', $.proxy(this, 'hidden'));
     },
+
     hidden: function() {
-      this.$items.trigger('hide.bs.submenu');
+      //this.$items.trigger('hide.bs.submenu');
     },
+
+    handleKeydownDropdownItem: function(event) {
+      // 27: Esc
+      if (event.keyCode !== 27) {
+        return;
+      }
+
+      console.log('keydown simple item');
+      //this.close();
+      //this.$main.children('.dropdown-item').trigger('focus');
+    },
+
+    handleKeydownSubmenuDropdownItem: function(event) {
+      // 13: Return, 32: Spacebar
+
+      if (event.keyCode === 32) {
+        // NOTE: Off vertical scrolling
+        event.preventDefault();
+      }
+
+      if ([13, 32].includes(event.keyCode)) {
+        this.toggle(event.target);
+      }
+
+      console.log('keydown hard item');
+    },
+
     itemKeydown: function(event) {
       // 38: Arrow up, 40: Arrow down
 
-      if ($.inArray(event.keyCode, [38, 40]) != -1) {
-        // Off vertical scrolling
-        event.preventDefault();
-
-        event.stopPropagation();
-
-        var $items = this.$menu.find('li:not(.disabled):visible > a');
-        var index = $items.index(event.target);
-
-        if (event.keyCode == 38 && index !== 0) {
-          index--;
-        }
-        else if (event.keyCode == 40 && index !== $items.length - 1) {
-          index++;
-        }
-        else {
-          return;
-        }
-
-        $items.eq(index).trigger('focus');
+      if (![38, 40].includes(event.keyCode)) {
+        return;
       }
+
+      // NOTE: Off vertical scrolling
+      event.preventDefault();
+
+      event.stopPropagation();
+
+      var $items = this.$menu.find('.dropdown-item:not(:disabled):not(.disabled):visible');
+      var index = $items.index(event.target);
+
+      if (event.keyCode === 38 && index !== 0) {
+        index--;
+      } else if (event.keyCode === 40 && index !== $items.length - 1) {
+        index++;
+      } else {
+        return;
+      }
+
+      $items.eq(index).trigger('focus');
     }
   };
 

@@ -13,11 +13,13 @@ document.addEventListener('DOMContentLoaded', function() {
 
       var html = '' +
         '<div class="input-group">' +
-          '<div class="input-group-btn"></div>' +
-          '<div class="input-group-addon">' +
-            '<span>' + data.stargazers_count + '</span>' +
-            '&nbsp;' +
-            '<span class="fa fa-star"></span>' +
+          '<div class="input-group-prepend"></div>' +
+          '<div class="input-group-append">' +
+            '<span class="input-group-text bg-white">' +
+              data.stargazers_count +
+              '&nbsp;' +
+              '<span class="fa fa-star"></span>' +
+            '</span>' +
           '</div>' +
         '</div>';
 
@@ -34,20 +36,20 @@ document.addEventListener('DOMContentLoaded', function() {
     document.documentElement
   ];
 
-  var $scrollBtn = $('#scroll-top');
+  var scrollButtonNode = document.querySelector('#scroll-top');
 
   function updateScrollBtnCls() {
     var scrollTop = containers.reduce(function(result, element) {
       return result + element.scrollTop;
     }, 0);
 
-    $scrollBtn.toggleClass('hidden', scrollTop < 100);
+    scrollButtonNode.classList.toggle('hidden', scrollTop < 100);
   }
 
-  $scrollBtn.on('click', function() {
+  scrollButtonNode.addEventListener('click', function() {
     window.onscroll = null;
 
-    $(this).addClass('hidden');
+    scrollButtonNode.classList.add('hidden');
 
     // 'html' for Mozilla Firefox, 'body' for other browsers
     $(containers).animate({
@@ -59,6 +61,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
   window.onscroll = updateScrollBtnCls;
 
+  /**
   // Dropdown fix
   $('.dropdown > a[tabindex]').on('keydown', function(event) {
     // 13: Return
@@ -67,6 +70,7 @@ document.addEventListener('DOMContentLoaded', function() {
       $(this).dropdown('toggle');
     }
   });
+  */
 
   // Для отмены закрытия при клике на неактивный элемент либо padding
   $('.dropdown-menu').on('click', function(event) {

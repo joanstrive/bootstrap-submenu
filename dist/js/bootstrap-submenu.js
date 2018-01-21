@@ -37,17 +37,18 @@
       this.$element.on('keydown', $.proxy(this, 'keydown'));
     },
     close: function() {
-      this.$main.removeClass('open');
+      console.log('close');
+      this.$menu.removeClass('show');
       this.$items.trigger('hide.bs.submenu');
     },
     keydown: function(event) {
       // 27: Esc
 
-      if (event.keyCode == 27) {
+      if (event.keyCode === 27) {
         event.stopPropagation();
 
         this.close();
-        this.$main.children('a, button').trigger('focus');
+        this.$main.children('.dropdown-item').trigger('focus');
       }
     }
   };
@@ -72,9 +73,6 @@
       this.$main.on('hide.bs.submenu', $.proxy(this, 'hide'));
     },
     click: function(event) {
-      // Fix a[href="#"]. For community
-      event.preventDefault();
-
       event.stopPropagation();
 
       this.toggle();
@@ -85,27 +83,27 @@
 
       this.close();
     },
-    open: function() {
-      this.$main.addClass('open');
+    show: function() {
+      console.log('show');
+      this.$menu.addClass('show');
       this.$subs.trigger('hide.bs.submenu');
     },
     toggle: function() {
-      if (this.$main.hasClass('open')) {
+      if (this.$menu.hasClass('show')) {
         this.close();
-      }
-      else {
-        this.open();
+      } else {
+        this.show();
       }
     },
     keydown: function(event) {
       // 13: Return, 32: Spacebar
 
-      if (event.keyCode == 32) {
+      if (event.keyCode === 32) {
         // Off vertical scrolling
         event.preventDefault();
       }
 
-      if ($.inArray(event.keyCode, [13, 32]) != -1) {
+      if ($.inArray(event.keyCode, [13, 32]) !== -1) {
         this.toggle();
       }
     }
@@ -125,11 +123,11 @@
       this.$menu.off('keydown.bs.dropdown.data-api');
       this.$menu.on('keydown', $.proxy(this, 'itemKeydown'));
 
-      this.$menu.find('li > a').each(function() {
+      this.$menu.find('.dropdown-item').each(function() {
         new Item(this);
       });
 
-      this.$menu.find('.dropdown-submenu > a').each(function() {
+      this.$menu.find('.dropdown-submenu > .dropdown-item').each(function() {
         new SubmenuItem(this);
       });
 
@@ -141,22 +139,20 @@
     itemKeydown: function(event) {
       // 38: Arrow up, 40: Arrow down
 
-      if ($.inArray(event.keyCode, [38, 40]) != -1) {
+      if ($.inArray(event.keyCode, [38, 40]) !== -1) {
         // Off vertical scrolling
         event.preventDefault();
 
         event.stopPropagation();
 
-        var $items = this.$menu.find('li:not(.disabled):visible > a');
+        var $items = this.$menu.find('.dropdown-item:not(:disabled):not(.disabled):visible');
         var index = $items.index(event.target);
 
-        if (event.keyCode == 38 && index !== 0) {
+        if (event.keyCode === 38 && index !== 0) {
           index--;
-        }
-        else if (event.keyCode == 40 && index !== $items.length - 1) {
+        } else if (event.keyCode === 40 && index !== $items.length - 1) {
           index++;
-        }
-        else {
+        } else {
           return;
         }
 

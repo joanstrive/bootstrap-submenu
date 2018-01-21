@@ -33,10 +33,6 @@ module.exports = function(grunt) {
         },
         src: 'less/<%= pkg.name %>.less',
         dest: 'dist/css/<%= pkg.name %>.css'
-      },
-      docs: {
-        src: 'docs/assets/less/docs.less',
-        dest: 'docs/assets/css/docs.css'
       }
     },
     copy: {
@@ -69,6 +65,11 @@ module.exports = function(grunt) {
           cwd: 'node_modules/jquery/dist',
           src: 'jquery.js',
           dest: '_gh_pages/vendor/jquery/js'
+        }, {
+          expand: true,
+          cwd: 'node_modules/popper.js/dist',
+          src: '**',
+          dest: '_gh_pages/vendor/popper.js'
         }, {
           expand: true,
           cwd: 'node_modules/font-awesome',
@@ -183,8 +184,8 @@ module.exports = function(grunt) {
     'clean',
     'less:core',
     'cssmin',
-    'jshint',
-    'jscs',
+    //'jshint',
+    //'jscs',
     'copy:core',
     'uglify',
     'usebanner'
@@ -192,7 +193,6 @@ module.exports = function(grunt) {
 
   grunt.registerTask('docs', [
     'ejs',
-    'less:docs',
     'copy:assets'
   ]);
 
